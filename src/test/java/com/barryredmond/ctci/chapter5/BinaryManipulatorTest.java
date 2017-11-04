@@ -125,5 +125,86 @@ public class BinaryManipulatorTest
 			
 		}
 	}
+	
+	
+	@DataProvider 
+	public Object[][] flipBitsData()
+	{
+		return new Object[][] {
+			{9, 15, 2},
+			{15, 9, 2},
+			{0, 0, 0},
+			{1, 1, 0},
+			{-10, -15, 3}, // -10(11111111111111111111111111110110) -> -15(11111111111111111111111111110001)
+			{19, 34, 3}, // 19(10011) -> 34(100010)
+		};
+	}
+	
+	@Test (dataProvider = "flipBitsData")
+	public void flipBitsTest(int a, int b, int expectedBitsNeeded)
+	{
+		int bitsNeeded = manipulator.countNumberOfBitsToFlip(a,  b);
+		assertEquals(expectedBitsNeeded, bitsNeeded, a + "(" + Integer.toBinaryString(a) + ") -> " + b + "(" + Integer.toBinaryString(b) + ") should have taken " + expectedBitsNeeded + ", but actually took " + bitsNeeded);
+	}
+	
+	@DataProvider
+	public Object[][] printLineData()
+	{
+		return new Object[][] {
+			{new byte[16], 32, 3, 15, 2, new byte[] { 0, 0, 0, 0,
+					 								 0, 0, 0, 0,
+													 0b00011111, (byte)0b11111111, 0, 0,
+					 								 0, 0, 0, 0,} 
+			},
+		};
+	}
+	
+	@Test (dataProvider = "printLineData")
+	public void printLineTest(byte[] initialScreen, int width, int x1, int x2, int y, byte[] expectedFinalScreen)
+	{
+		
+		manipulator.drawHorizontalLine(initialScreen, width, x1, x2, y);
+		printScreen(initialScreen, width);
+		assertEquals(expectedFinalScreen, initialScreen);
+	}
+
+	private void printScreen(byte[] screen, int width) {
+		StringBuilder builder = new StringBuilder();
+		final int bytesPerLine = width/8;
+		for(int byteIndex = 0; byteIndex < screen.length; byteIndex++)
+		{
+			if (byteIndex % bytesPerLine == 0)
+			{
+				builder.append("|");
+			}
+			print(builder, screen[byteIndex]);
+			if (byteIndex % bytesPerLine == bytesPerLine - 1)
+			{
+				builder.append("|\n");
+			}
+			else
+			{
+				builder.append('.');
+			}
+		}
+		System.out.println(builder.toString());
+	}
+
+	private static final char ZERO = ' ';
+	private static final char ONE = '*';
+	private void print(StringBuilder builder, byte currentByte) {
+		for (int i = 7 ; i >= 0; i--)
+		{
+			final int bit = (currentByte >> i) & 1;
+			if (bit == 1)
+			{
+				builder.append(ONE);
+			}
+			else
+			{
+				builder.append(ZERO);
+			}
+		}
+	}
 
 }

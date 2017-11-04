@@ -1,28 +1,13 @@
 package com.barryredmond.ctci.chapter5;
 
 import com.barryredmond.util.Tuple;
+import com.google.common.base.Preconditions;
 
 /**
  * 
-
-
-5.5 Write a function to determine the number of bits you would need to flip to convert integer A to integer B
-Input 29(11101) -> 15(01111) would be 2
-
-5.8 A monochrome screen is stored in a single array of bytes, allowing eight consecutive pixels to be stored in one byte. The screen has width w, where w is divisible by 8(that is, no byte will be spit across rows) The height of the screen, of course, can be derived from the length of the array and the width. Implement a function drawHorizontalLine(byte[] screen, int width, int x1, int x2, int y) which draw a horizontal line from (x1, y) to (x2, y)
  */
 public class BinaryManipulator 
 {
-
-	public static void main(String[] args)
-	{
-		int a = 123;
-		System.out.println("a=" + a + " (a>>1)=" + (a>>1) + " (a & 1)=" + (a & 1));
-		a = (a>>1);
-		System.out.println("a=" + a + " (a>>1)=" + (a>>1) + " (a & 1)=" + (a & 1));
-		a = (a>>1);
-		System.out.println("a=" + a + " (a>>1)=" + (a>>1) + " (a & 1)=" + (a & 1));
-	}
 	
 	/**
 	 * 5.3 Given a positive integer, print the next smallest and the next largest 
@@ -42,7 +27,7 @@ public class BinaryManipulator
 		int count = 0;
 		for (int i = 0; i < 32; i++)
 		{
-			if ((a | 1) != (b | 1))
+			if ((a & 1) != (b & 1))
 			{
 				count++;
 			}
@@ -136,5 +121,49 @@ public class BinaryManipulator
 		return value;
 	}
 
-	
+	/**
+	 * 5.8 A monochrome screen is stored in a single array of bytes, allowing eight 
+	 * consecutive pixels to be stored in one byte. The screen has width w, where w 
+	 * is divisible by 8(that is, no byte will be spit across rows) The height of the 
+	 * screen, of course, can be derived from the length of the array and the width. 
+	 * Implement a function drawHorizontalLine(byte[] screen, int width, int x1, int x2, int y)
+	 *  which draw a horizontal line from (x1, y) to (x2, y)
+	 */
+	private static final byte ALL_ONES = -128;
+	public void drawHorizontalLine(byte[] screen, int width, int x1, int x2, int y)
+	{
+		Preconditions.checkArgument(x1 <= x2);
+		Preconditions.checkArgument(x2 < width);
+		Preconditions.checkArgument(width % 8 == 0);
+		final int bytesPerLine = width/8;
+		Preconditions.checkArgument((y+1) * bytesPerLine < screen.length);
+				
+		byte firstByteValue = _printSuffixBits(8 - (x1 % 8));
+		byte lastByteValue = _printPrefixBits(1 + (x2 % 8));
+		
+		int firstByteIndex = (bytesPerLine * y) + x1 / 8;
+		int lastByteIndex = (bytesPerLine * y) + x2 / 8;
+		
+		screen[firstByteIndex] = firstByteValue;
+		for (int i = firstByteIndex+1; i < lastByteIndex; i++)
+		{
+			screen[i] = ALL_ONES;
+		}
+		screen[lastByteIndex] = lastByteValue;
+	}
+
+	private byte _printPrefixBits(int bits) {
+		byte b = _printSuffixBits(bits);
+		return (byte) (b << 8-bits);
+	}
+
+	private byte _printSuffixBits(int bits) {
+		int b = 0;
+		for (int i = 0; i < bits; i++)
+		{
+			b = b << 1;
+			b = b | 1;
+		}
+		return (byte) b;
+	}
 }
